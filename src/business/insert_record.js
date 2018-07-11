@@ -46,7 +46,7 @@ _updateLastCommits = (records) => {
             sensor.update({ last_commit: record.datetime, last_values: values }).then(
               () => resolve(),
               err => reject(err));
-          } else error.insert(null, null, record.sensor_id, "cannot_update_sensor", err.message).then(
+          } else error.insert(null, null, record.sensor_id, "cannot_update_sensor", "sensor not found").then(
             () => resolve(),
             err => reject(err));
         }, err => reject(err));

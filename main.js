@@ -29,7 +29,7 @@ if (cluster.isMaster) {
       //Handle messaging
       require('./src/message_handler').listen(require('socket.io')(server), connection);
 
-      let port = process.env.PORT || 8080;
+      let port = process.env.PORT || 8000;
       server.listen(port, () => {
         console.log(`Server running on port ${port}`);
       });
