@@ -20,7 +20,7 @@ exports.startWorkers = (conn) => {
             () => ch.ack(msg),
             error => {
               ch.ack(msg);
-              // console.log("broker error: ", error)
+              console.log("broker error: ", error)
             });
         }, { noAck: false });
 

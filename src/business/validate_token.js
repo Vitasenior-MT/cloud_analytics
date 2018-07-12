@@ -14,9 +14,12 @@ exports.validateToken = (token) => {
     jwt.verify(token, public_key, options, (error, payload) => {
       if (error) reject({ code: 500, msg: error.message });
       if (payload.role === "User") db.User.findById(payload.id).then(
-        user => user.getVitaboxes({ where: { active: true } }).then(
-          vitaboxes => resolve(vitaboxes.map(x => x.id)),
-          error => reject(error)),
+        user => {
+          if (user) user.getVitaboxes({ where: { active: true } }).then(
+            vitaboxes => resolve(vitaboxes.map(x => x.id)),
+            error => reject(error));
+          else reject(new Error("user not found"));
+        },
         error => reject(error));
       else resolve([payload.id]);
     });

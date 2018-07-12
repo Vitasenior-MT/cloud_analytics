@@ -13,10 +13,9 @@ var schema = new mongoose.Schema({
         type: String,
         required: false
     },
-    analyzed: { type: Boolean },
     patient_id: {
         type: String,
-        required: false
+        default: null
     }
 }, {
         versionKey: false,
@@ -29,4 +28,4 @@ var schema = new mongoose.Schema({
         }
     });
 
-module.exports = mongoose.model('RecordOld', schema);
+module.exports = mongoose.model('Record', schema);

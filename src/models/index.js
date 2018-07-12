@@ -68,9 +68,8 @@ const db = {
     'Log': require('./mongodb/log'),
     'Profilemeasure': require('./mongodb/profile_measure'),
     'Profilemodel': require('./mongodb/profile_model'),
-    'RecordCheck': require('./mongodb/record_check'),
+    'Record': require('./mongodb/record'),
     'RecordOld': require('./mongodb/record_old'),
-    'RecordTemp': require('./mongodb/record_temp'),
     'Warning': require('./mongodb/warning')
 }
 

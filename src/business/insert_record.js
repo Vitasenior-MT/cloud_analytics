@@ -20,7 +20,12 @@ _insertAllRecords = (records) => {
     records = records.filter(record => record.value && record.datetime && record.sensor_id && (!record.patient_id || record.patient_id !== ""));
     if (records.length > 0) {
       let promises = records.map(record => new Promise((resolve, reject) => {
-        db.RecordTemp.create(record, (err, doc) => {
+        db.Record.create({
+          value: Math.round(record.value * 100) / 100,
+          datetime: record.datetime,
+          sensor_id: record.sensor_id,
+          patient_id: record.patient_id ? record.patient_id : null
+        }, (err, doc) => {
           if (err) error.insert(null, null, record.sensor_id, "cannot_insert_record", err.message).then(
             () => resolve(null),
             err => reject(err));
