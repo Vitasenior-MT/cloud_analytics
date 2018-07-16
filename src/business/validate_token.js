@@ -1,6 +1,7 @@
 var db = require('../models/index'),
   fs = require("fs"),
-  jwt = require('jsonwebtoken');
+  jwt = require('jsonwebtoken'),
+  vitabox_list = require('./get_vitaboxes');
 
 exports.validateToken = (token) => {
   return new Promise((resolve, reject) => {
@@ -16,8 +17,11 @@ exports.validateToken = (token) => {
       if (payload.role === "User") db.User.findById(payload.id).then(
         user => {
           if (user) user.getVitaboxes({ where: { active: true } }).then(
-            vitaboxes => resolve(vitaboxes.map(x => x.id)),
-            error => reject(error));
+            vitaboxes => {
+              let rooms = vitaboxes.map(x => x.id);
+              if (user.admin) rooms.push("admin");
+              resolve(rooms);
+            }, error => reject(error));
           else reject(new Error("user not found"));
         },
         error => reject(error));

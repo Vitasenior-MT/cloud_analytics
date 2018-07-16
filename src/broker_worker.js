@@ -5,31 +5,33 @@ var workers = [
   { queue: "log", execute: require("./business/log") }
 ];
 
-exports.startWorkers = (conn) => {
+exports.startWorkers = (channel) => {
+
   let promises = workers.map(worker => {
     return new Promise((resolve, reject) => {
+      channel.assertQueue(worker.queue, { durable: true });
 
-      conn.createChannel((err, ch) => {
-        if (err) reject(err);
+      channel.prefetch(1);
 
-        ch.assertQueue(worker.queue, { durable: true });
-        ch.prefetch(1);
-
-        ch.consume(worker.queue, (msg) => {
-          worker.execute(JSON.parse(msg.content)).then(
-            () => ch.ack(msg),
-            error => {
-              ch.ack(msg);
-              console.log("broker error: ", error)
+      channel.consume(worker.queue, (msg) => {
+        worker.execute(JSON.parse(msg.content)).then(
+          response => {
+            channel.ack(msg);
+            if (response.error) channel.publish("admin", '', new Buffer(JSON.stringify("error")));
+            if (response.warnings.length > 0) response.warnings.forEach(room => {
+              channel.publish(room, '', new Buffer(JSON.stringify("warning")));
             });
-        }, { noAck: false });
+          }, error => {
+            channel.ack(msg);
+            console.log("broker error: ", error);
+          });
+      }, { noAck: false });
 
-        resolve(worker.queue);
-      });
+      resolve();
     });
   });
 
   Promise.all(promises).then(
-    queues => console.log('\x1b[32m%s %s\x1b[0m', '(PLAIN) Worker ', process.pid, 'listening on queues: ', queues),
+    () => console.log('\x1b[32m%s %s\x1b[0m', '(PLAIN) Worker ', process.pid, 'listening queues'),
     error => console.log("Queue error", error));
 }

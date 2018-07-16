@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
   # via 127.0.0.1 to disable public access
   config.vm.network :forwarded_port, guest: 8000, host: 8000, host_ip:"127.0.0.1"
   config.vm.network :forwarded_port, guest: 5672, host: 5672, host_ip:"127.0.0.1"
-  config.vm.network :forwarded_port, guest: 5673, host: 5673, host_ip:"127.0.0.1"
+  config.vm.network :forwarded_port, guest: 15672, host: 15672, host_ip:"127.0.0.1"
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -65,8 +65,8 @@ Vagrant.configure("2") do |config|
     sudo apt-get install -y build-essential
 
     sudo apt-get install rabbitmq-server -y
-    # start rabbitmq 
-    # sudo service rabbitmq-server start
+    sudo rabbitmqctl add_user root 123qwe
+    sudo rabbitmqctl set_user_tags root administrator
 
     # if: protocol error, symlink '../semver/bin/semver' -> '/vagrant/node_modules/.bin/semver'
     # sudo npm install --save --no-bin-links
@@ -76,6 +76,5 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", run: 'always', inline: <<-SHELL
     sudo service rabbitmq-server start
     sudo service rabbitmq-server status
-    cd /vagrant
   SHELL
 end

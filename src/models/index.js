@@ -70,7 +70,8 @@ const db = {
     'Profilemodel': require('./mongodb/profile_model'),
     'Record': require('./mongodb/record'),
     'RecordOld': require('./mongodb/record_old'),
-    'Warning': require('./mongodb/warning')
+    'Warning': require('./mongodb/warning'),
+    'WarningUnseen': require('./mongodb/warning_unseen')
 }
 
 Object.keys(db).forEach(modelName => {

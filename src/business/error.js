@@ -15,15 +15,3 @@ exports.insert = (vitabox_id, board_id, sensor_id, title, message) => {
     });
   });
 }
-
-exports.check = (error_id, user_id) => {
-  return new Promise((resolve, reject) => {
-    db.Error.where({ _id: error_id }).update({
-      "seen_date": new Date(),
-      "seen_user": user_id
-    }, (err, res) => {
-      if (err) reject(err);
-      resolve();
-    });
-  });
-}

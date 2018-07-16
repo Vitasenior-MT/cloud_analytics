@@ -70,6 +70,11 @@ module.exports = (sequelize, DataTypes) => {
           msg: "maximum possible value must be defined"
         }
       }
+    },
+    to_read: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: ''
     }
   }, { underscored: true });
 

@@ -1,29 +1,31 @@
-exports.subscribe = (conn, vitabox_id) => {
+exports.subscribe = (channel, vitabox_id) => {
   return new Promise((resolve, reject) => {
 
-    conn.createChannel(function (err, ch) {
+    channel.assertExchange(vitabox_id, 'fanout', { durable: true });
+
+    //setup a queue for receiving messages
+    channel.assertQueue('', { exclusive: true }, function (err, q) {
       if (err) reject(err);
-      ch.assertExchange(vitabox_id, 'fanout', { durable: true });
 
-      //setup a queue for receiving messages
-      ch.assertQueue('', { exclusive: true }, function (err, q) {
-        if (err) reject(err);
+      channel.bindQueue(q.queue, vitabox_id, '');
 
-        ch.bindQueue(q.queue, vitabox_id, '');
+      let exchanges = {
+        emitMessage: emitMessage,
+        onMessageReceived: onMessageReceived
+      };
 
-        //listen for messages
-        ch.consume(q.queue, function (msg) {
-          onMessageReceived(vitabox_id, JSON.parse(msg.content.toString()));
-        }, { noAck: true });
+      //listen for messages
+      channel.consume(q.queue, function (msg) {
+        exchanges.onMessageReceived(vitabox_id, JSON.parse(msg.content.toString()));
+      }, { noAck: true });
 
-        function emitMessage(message) {
-          ch.publish(vitabox_id, '', new Buffer(JSON.stringify(message)));
-        }
-        function onMessageReceived() { }
+      function emitMessage(message) {
+        channel.publish(vitabox_id, '', new Buffer(JSON.stringify(message)));
+      }
+      function onMessageReceived() { }
 
-        resolve({ id: vitabox_id, emitMessage: emitMessage, onMessageReceived: onMessageReceived });
+      resolve(exchanges);
 
-      });
     });
   });
 }

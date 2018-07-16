@@ -21,14 +21,6 @@ var schema = new mongoose.Schema({
     type: String,
     required: true
   },
-  seen_date: {
-    type: Date,
-    default: null
-  },
-  seen_user: {
-    type: String,
-    default: null
-  },
   seen_vitabox: {
     type: Date,
     default: null

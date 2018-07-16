@@ -8,13 +8,13 @@ module.exports = (content) => {
         records => db.RecordOld.insertMany(records), (err, doc) => {
           if (err) {
             error.insert("board", content.board_id, "cannot_find_board", err.message).then(
-              () => resolve(),
+              () => resolve({ error: true, warnings: [] }),
               err => reject(err));
           }
           else Promise.all(sensors.map(x => _removeRecordsWhere({ sensor_id: x.id }))).then(
-            () => resolve(),
+            () => resolve({ error: false, warnings: [] }),
             err => error.insert("board", content.board_id, "cannot_remove_record", err.message).then(
-              () => resolve(),
+              () => resolve({ error: true, warnings: [] }),
               err => reject(err)));
         }, err => reject(err)),
       err => reject(err));
