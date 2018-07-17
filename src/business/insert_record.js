@@ -31,7 +31,7 @@ module.exports = (content) => {
 _prepareRecords = (records) => {
   return new Promise((resolve, reject) => {
 
-    records = records.filter(record => record.value && record.datetime && record.sensor_id && (!record.patient_id || record.patient_id !== ""));
+    records = records.filter(record => record.value !== undefined && record.value !== null && record.datetime && record.sensor_id && (!record.patient_id || record.patient_id !== ""));
     if (records.length > 0) {
       let promises_all = records.map(record => {
         return new Promise((resolve, reject) => {
@@ -125,6 +125,8 @@ _verifyThresholdsFromPatient = (data) => {
       vitabox = data.sensor.Board.Vitabox.id;
       // update last warning
       promises.push(data.sensor.update({ last_warning: new Date() }));
+      promises.push(warning.countDoctor(data.patient.id));
+      promises.push(warning.countVitabox(data.sensor.Board.Vitabox.id));
       // check limits of clinical profile
       if (data.record.value > profile.max) promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, data.patient.id, "warning_up_limit"));
       if (data.record.value < profile.min) promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, data.patient.id, "warning_down_limit"));
@@ -152,6 +154,7 @@ _verifyThresholdsFromSensor = (data) => {
       vitabox = data.sensor.Board.Vitabox.id;
       // update last warning
       promises.push(data.sensor.update({ last_warning: new Date() }));
+      promises.push(warning.countVitabox(data.sensor.Board.Vitabox.id));
       // checks by sensor limits
       if (data.record.value > data.sensor.Sensormodel.max_acceptable) promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, null, "warning_up_limit"));
       if (data.record.value < data.sensor.Sensormodel.min_acceptable) promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, null, "warning_down_limit"));
