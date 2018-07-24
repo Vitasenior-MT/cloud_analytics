@@ -35,8 +35,8 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: true
         },
         weight:{
-            type: DataTypes.FLOAT(5, 2),
-            allowNull: false,
+            type: DataTypes.FLOAT(4, 2),
+            allowNull: true,
             validate: {
               min: {
                 args: 10,
@@ -49,8 +49,8 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         height:{
-            type: DataTypes.FLOAT(5, 2),
-            allowNull: false,
+            type: DataTypes.FLOAT(4, 2),
+            allowNull: true,
             validate: {
               min: {
                 args: 0.5,
@@ -68,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
         models.Patient.hasMany(models.Profile);
         models.Patient.belongsTo(models.Vitabox);
         models.Patient.belongsToMany(models.Board, { through: "PatientBoard" });
-        models.Patient.belongsToMany(models.User, { through: "DoctorPatient" });
+        models.Patient.belongsToMany(models.User, { through: models.DoctorPatient, as: 'Doctors' });
     };
 
     return Patient;

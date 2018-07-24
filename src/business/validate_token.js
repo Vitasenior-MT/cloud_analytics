@@ -23,8 +23,7 @@ exports.validateToken = (token) => {
               resolve(rooms);
             }, error => reject(error));
           else reject(new Error("user not found"));
-        },
-        error => reject(error));
+        }, error => reject(error));
       else resolve([payload.id]);
     });
   });

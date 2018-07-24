@@ -42,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = function (models) {
     models.User.belongsToMany(models.Vitabox, { through: models.UserVitabox });
-    models.User.belongsToMany(models.Patient, { through: "DoctorPatient" });
+    models.User.belongsToMany(models.Patient, { through: models.DoctorPatient });
   };
 
   return User;

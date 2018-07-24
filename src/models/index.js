@@ -63,6 +63,7 @@ const db = {
     'UserVitabox': require('./mysql/user_vitabox')(sequelize, Sequelize),
     'User': require('./mysql/user')(sequelize, Sequelize),
     'Vitabox': require('./mysql/vitabox')(sequelize, Sequelize),
+    'DoctorPatient': require('./mysql/doctor_patient')(sequelize, Sequelize),
 
     'Error': require('./mongodb/error'),
     'Log': require('./mongodb/log'),
@@ -71,7 +72,8 @@ const db = {
     'Record': require('./mongodb/record'),
     'RecordOld': require('./mongodb/record_old'),
     'Warning': require('./mongodb/warning'),
-    'WarningUser': require('./mongodb/warning_user')
+    'WarningUser': require('./mongodb/warning_user'),
+    'WarningDoctor': require('./mongodb/warning_doctor')
 }
 
 Object.keys(db).forEach(modelName => {

@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       validate: {
         is: {
-          args: /^([0-9a-f]{2}[:]){7}([0-9a-f]{2})$/,
+          args: /^([0-9a-f]{2}[:]){7}([0-9a-f]{2})|^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$/,
           msg: "MAC addres must be valid"
         }
       }
