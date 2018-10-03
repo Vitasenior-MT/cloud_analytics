@@ -3,6 +3,6 @@ exports.list = () => {
     let db = require('../models/index');
     db.Vitabox.findAll().then(
       list => resolve(list.map(x => x.id)),
-      error => reject({ code: 500, msg: error.message }));
+      error => reject(error.message));
   });
 }

@@ -4,8 +4,8 @@ var mongoose = require('mongoose'),
 var mongo_uri = "", mysql_uri = "";
 
 if (process.env.NODE_ENV === "production") {
-    mongo_uri = 'mongodb://admin:MVJVTVJRQVCKVDCP@sl-eu-lon-2-portal.9.dblayer.com:26110,sl-eu-lon-2-portal.10.dblayer.com:26110/compose?authSource=admin&ssl=true';
-    mysql_uri = 'mysql://admin:ZJBQRDMEHMADJHUQ@sl-eu-lon-2-portal.11.dblayer.com:26392/compose';
+    mongo_uri = '';
+    mysql_uri = '';
 } else {
     mongo_uri = 'mongodb://192.168.161.53:27017/test';
     mysql_uri = 'mysql://api:123qwe@192.168.161.53:3306/test';
@@ -56,6 +56,8 @@ var sequelize = new Sequelize(mysql_uri, { operatorsAliases: operatorsAliases, l
 const db = {
     'Boardmodel': require('./mysql/board_model')(sequelize, Sequelize),
     'Board': require('./mysql/board')(sequelize, Sequelize),
+    'DoctorPatient': require('./mysql/doctor_patient')(sequelize, Sequelize),
+    'PatientBoard': require('./mysql/patient_board')(sequelize, Sequelize),
     'Patient': require('./mysql/patient')(sequelize, Sequelize),
     'Profile': require('./mysql/profile')(sequelize, Sequelize),
     'Sensormodel': require('./mysql/sensor_model')(sequelize, Sequelize),
@@ -63,14 +65,12 @@ const db = {
     'UserVitabox': require('./mysql/user_vitabox')(sequelize, Sequelize),
     'User': require('./mysql/user')(sequelize, Sequelize),
     'Vitabox': require('./mysql/vitabox')(sequelize, Sequelize),
-    'DoctorPatient': require('./mysql/doctor_patient')(sequelize, Sequelize),
 
     'Error': require('./mongodb/error'),
     'Log': require('./mongodb/log'),
     'Profilemeasure': require('./mongodb/profile_measure'),
     'Profilemodel': require('./mongodb/profile_model'),
     'Record': require('./mongodb/record'),
-    'RecordOld': require('./mongodb/record_old'),
     'Warning': require('./mongodb/warning'),
     'WarningUser': require('./mongodb/warning_user'),
     'WarningDoctor': require('./mongodb/warning_doctor')

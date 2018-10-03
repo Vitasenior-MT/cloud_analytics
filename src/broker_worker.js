@@ -1,7 +1,10 @@
 
 var workers = [
   { queue: "insert_record", execute: require("./business/insert_record") },
-  { queue: "remove_record", execute: require("./business/remove_record") },
+  { queue: "remove_record_by_board", execute: require("./business/remove_record").byBoard },
+  { queue: "remove_record_by_sensors", execute: require("./business/remove_record").bySensors },
+  { queue: "remove_record_by_board_patient", execute: require("./business/remove_record").byBoardPatient },
+  { queue: "remove_record_by_patient", execute: require("./business/remove_record").byPatient },
   { queue: "log", execute: require("./business/log") }
 ];
 
@@ -17,9 +20,8 @@ exports.startWorkers = (channel) => {
         worker.execute(JSON.parse(msg.content)).then(
           response => {
             channel.ack(msg);
-            if (response.error) channel.publish("admin", '', new Buffer(JSON.stringify("error")));
-            if (response.warnings.length > 0) response.warnings.forEach(room => {
-              channel.publish(room, '', new Buffer(JSON.stringify("warning")));
+            response.forward.forEach(x => {
+              channel.publish(x.room, '', new Buffer(x.key));
             });
           }, error => {
             channel.ack(msg);

@@ -71,6 +71,26 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: null
+    },
+    district: {
+      type: DataTypes.STRING,
+      defaultValue: null,
+      validate: {
+        notEmpty: {
+          args: true,
+          msg: "district must be defined"
+        }
+      }
+    },
+    locality: {
+      type: DataTypes.STRING,
+      defaultValue: null,
+      validate: {
+        notEmpty: {
+          args: true,
+          msg: "locality must be defined"
+        }
+      }
     }
   }, { underscored: true });
 

@@ -8,7 +8,7 @@ module.exports = (content) => {
       "user_id": content.user,
     }, (err, res) => {
       if (err) reject(err.message);
-      resolve({ error: false, warnings: [] });
+      resolve({ forward: [] });
     });
   });
 }
