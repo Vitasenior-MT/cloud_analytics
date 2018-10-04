@@ -21,7 +21,7 @@ exports.startWorkers = (channel) => {
           response => {
             channel.ack(msg);
             response.forward.forEach(x => {
-              channel.publish(x.room, '', new Buffer(x.key));
+              channel.publish(x.room, '', new Buffer(JSON.stringify({ content: x.key, msg: "" })));
             });
           }, error => {
             channel.ack(msg);

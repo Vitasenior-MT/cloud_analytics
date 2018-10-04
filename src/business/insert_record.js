@@ -32,7 +32,6 @@ _prepareRecords = (records) => {
   return new Promise((resolve, reject) => {
     records = records.filter(record => record.value !== undefined && record.value !== null && record.datetime && record.sensor_id && (!record.patient_id || record.patient_id !== ""));
     if (records.length > 0) {
-      console.log("duplicate: ", records.map(x => x.sensor_id === "a6e35268-6bf0-4725-8fbe-10cf47bff5ad").length);
       let promises_all = records.map(record => {
         return new Promise((resolve, reject) => {
           let promises_1 = [db.Sensor.findById(record.sensor_id, { include: [{ model: db.Sensormodel }, { model: db.Board, include: [{ model: db.Vitabox }] }] })];
@@ -153,7 +152,7 @@ _verifyThresholdsFromPatient = (data) => {
       // check for abnormal variation
       if (data.record.value > (avg + std) && data.record.value < profile.max)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, data.patient.id, "warning_up_tending"));
-      if (data.record.value > (avg + std) && data.record.value > profile.min)
+      if (data.record.value < (avg - std) && data.record.value > profile.min)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, data.patient.id, "warning_down_tending"));
     }
     // verify values out of range 
@@ -187,7 +186,7 @@ _verifyThresholdsFromSensor = (data) => {
       // check for abnormal variation
       if (data.record.value > (avg + std) && data.record.value < data.sensor.Sensormodel.max_acceptable)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, null, "warning_up_tending"));
-      if (data.record.value > (avg + std) && data.record.value > data.sensor.Sensormodel.min_acceptable)
+      if (data.record.value < (avg - std) && data.record.value > data.sensor.Sensormodel.min_acceptable)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, null, "warning_down_tending"));
     }
     // verify values out of range 
