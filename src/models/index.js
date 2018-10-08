@@ -1,16 +1,6 @@
 var mongoose = require('mongoose'),
     Sequelize = require('sequelize');
 
-var mongo_uri = "", mysql_uri = "";
-
-if (process.env.NODE_ENV === "production") {
-    mongo_uri = '';
-    mysql_uri = '';
-} else {
-    mongo_uri = 'mongodb://192.168.161.53:27017/test';
-    mysql_uri = 'mysql://api:123qwe@192.168.161.53:3306/test';
-}
-
 const operatorsAliases = {
     $eq: Sequelize.Op.eq,
     $ne: Sequelize.Op.ne,
@@ -49,9 +39,9 @@ const operatorsAliases = {
 };
 
 // Create a new conntection to MongoDB server
-mongoose.connect(mongo_uri);
+mongoose.connect(process.env.MONGODB);
 // Create a new connection to MySQL server
-var sequelize = new Sequelize(mysql_uri, { operatorsAliases: operatorsAliases, logging: false });
+var sequelize = new Sequelize(process.env.MYSQL, { operatorsAliases: operatorsAliases, logging: false });
 
 const db = {
     'Boardmodel': require('./mysql/board_model')(sequelize, Sequelize),

@@ -25,7 +25,7 @@ exports.startWorkers = (channel) => {
             });
           }, error => {
             channel.ack(msg);
-            console.log("broker error: ", error);
+            // console.log("broker error: ", error);
           });
       }, { noAck: false });
 

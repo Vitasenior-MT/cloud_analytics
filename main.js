@@ -4,11 +4,12 @@
 // =============================================================================
 
 var cluster = require('cluster');
+require('dotenv').config();
 
 if (cluster.isMaster) {
   require('./src/models/index').sequelize.sync().then(
     () => {
-      console.log('\x1b[32m%s\x1b[0m.', '(PLAIN) Connection established with MongoDB and MySQL');
+      // console.log('\x1b[32m%s\x1b[0m.', '(PLAIN) Connection established with MongoDB and MySQL');
 
       for (var i = 0; i < require('os').cpus().length; i++) cluster.fork();
 

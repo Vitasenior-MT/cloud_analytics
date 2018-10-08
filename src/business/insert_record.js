@@ -5,22 +5,18 @@ var db = require('../models/index'),
 module.exports = (content) => {
   return new Promise((resolve, reject) => {
     let error = false, checked = null;
-    console.log("\x1b[31m1\x1b[0m - received");
+    // console.log("\x1b[36mreceived\x1b[0m ", process.pid, new Date());
     _prepareRecords(content.records).then(data => {
-      console.log("\x1b[31m2\x1b[0m - prepared, any error: ", data.error);
       if (data.error) error = true;
       checked = data.data;
       return _insertAllRecords(checked);
     }).then(has_error => {
-      console.log("\x1b[35m3\x1b[0m - inserted, any error: ", has_error);
       if (has_error) error = true;
       return _updateLastCommits(checked);
     }).then(has_error => {
-      console.log("\x1b[34m4\x1b[0m - updated, any error: ", has_error);
       if (has_error) error = true;
       return _validateRecords(checked);
     }).then(warnings => {
-      console.log("\x1b[36m5\x1b[0m - validated,  any error: ", error, "warning: ", warnings.length > 0);
       if (error) resolve({ forward: [{ room: "admin", key: "error" }].concat(warnings.map(w => { return { room: w.vitabox, key: "warning_" + w.type } })) });
       else resolve({ forward: warnings.map(w => { return { room: w.vitabox, key: "warning_" + w.type } }) });
     }).catch(err => reject(err.message));
@@ -87,7 +83,7 @@ _updateLastCommits = (data) => {
       values.unshift(d.record.value);
       if (values.length > 5) values.pop();
 
-      let promises_1 = [
+      let promises = [
         new Promise((resolve, reject) =>
           d.sensor.update({ last_commit: new Date(), last_values: values }).then(
             () => resolve(false),
@@ -95,7 +91,7 @@ _updateLastCommits = (data) => {
               () => resolve(true),
               err => reject(err))))
       ];
-      if (d.patient) promises_1.push(
+      if (d.patient) promises.push(
         new Promise((resolve, reject) =>
           db.PatientBoard.update({ last_commit: new Date() }, { where: { patient_id: d.patient.id, board_id: d.sensor.Board.id } }).then(
             () => resolve(false),
@@ -104,10 +100,10 @@ _updateLastCommits = (data) => {
               err => reject(err)))
         ));
 
-      return promises_1;
+      return promises;
     });
 
-    var mashed = Object.keys(data).reduce(function (arr, key) {
+    let mashed = Object.keys(promises_all).reduce((arr, key) => {
       return arr.concat(data[key]);
     }, []);
 
@@ -136,9 +132,9 @@ _verifyThresholdsFromPatient = (data) => {
     let profile = data.patient.Profiles.filter(x => x.tag === data.sensor.Sensormodel.tag)[0];
     // calculates average and standard deviation
     let avg = data.sensor.last_values.reduce((total, x) => total + x) / data.sensor.last_values.length;
-    let std = Math.sqrt(data.sensor.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.sensor.last_values.length);
+    let std2 = (Math.sqrt(data.sensor.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.sensor.last_values.length)) * 2;
     // verify any warning
-    if (data.record.value > profile.max || data.record.value > (avg + std) || data.record.value < profile.min || data.record.value > (avg + std)) {
+    if (data.record.value > profile.max || data.record.value > (avg + std2) || data.record.value < profile.min || data.record.value > (avg + std2)) {
       res = { vitabox: data.sensor.Board.Vitabox.id, type: "bio" };
       // update last warning
       promises.push(data.sensor.update({ last_warning: new Date() }));
@@ -150,9 +146,9 @@ _verifyThresholdsFromPatient = (data) => {
       if (data.record.value < profile.min)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, data.patient.id, "warning_down_limit"));
       // check for abnormal variation
-      if (data.record.value > (avg + std) && data.record.value < profile.max)
+      if (data.record.value > (avg + std2) && data.record.value < profile.max)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, data.patient.id, "warning_up_tending"));
-      if (data.record.value < (avg - std) && data.record.value > profile.min)
+      if (data.record.value < (avg - std2) && data.record.value > profile.min)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, data.patient.id, "warning_down_tending"));
     }
     // verify values out of range 
@@ -171,9 +167,9 @@ _verifyThresholdsFromSensor = (data) => {
     let promises = [], res = null;
     // calculates average and standard deviation
     let avg = data.sensor.last_values.reduce((total, x) => total + x) / data.sensor.last_values.length;
-    let std = Math.sqrt(data.sensor.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.sensor.last_values.length);
+    let std2 = (Math.sqrt(data.sensor.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.sensor.last_values.length)) * 2;
     // verify any warning
-    if (data.record.value > data.sensor.Sensormodel.max_acceptable || data.record.value > (avg + std) || data.record.value < data.sensor.Sensormodel.min_acceptable || data.record.value > (avg + std)) {
+    if (data.record.value > data.sensor.Sensormodel.max_acceptable || data.record.value > (avg + std2) || data.record.value < data.sensor.Sensormodel.min_acceptable || data.record.value > (avg + std2)) {
       res = { vitabox: data.sensor.Board.Vitabox.id, type: "env" };
       // update last warning
       promises.push(data.sensor.update({ last_warning: new Date() }));
@@ -184,9 +180,9 @@ _verifyThresholdsFromSensor = (data) => {
       if (data.record.value < data.sensor.Sensormodel.min_acceptable)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, null, "warning_down_limit"));
       // check for abnormal variation
-      if (data.record.value > (avg + std) && data.record.value < data.sensor.Sensormodel.max_acceptable)
+      if (data.record.value > (avg + std2) && data.record.value < data.sensor.Sensormodel.max_acceptable)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, null, "warning_up_tending"));
-      if (data.record.value < (avg - std) && data.record.value > data.sensor.Sensormodel.min_acceptable)
+      if (data.record.value < (avg - std2) && data.record.value > data.sensor.Sensormodel.min_acceptable)
         promises.push(warning.insert(data.sensor.Board.Vitabox.id, data.sensor.id, null, "warning_down_tending"));
     }
     // verify values out of range 

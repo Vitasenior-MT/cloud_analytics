@@ -11,11 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "amqplib": "^0.5.2",
+    "cluster": "^0.7.7",
+    "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.1.4",
     "mysql2": "^1.5.3",
-    "sequelize": "^4.37.10",
-    "cluster": "^0.7.7"
+    "sequelize": "^4.37.10"
   }
 }
