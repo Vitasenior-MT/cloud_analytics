@@ -5,7 +5,7 @@ var db = require('../models/index'),
 module.exports = (content) => {
   return new Promise((resolve, reject) => {
     let error = false, checked = null;
-    // console.log("\x1b[36mreceived\x1b[0m ", process.pid, new Date());
+    console.log("\x1b[36mreceived\x1b[0m: ", content.records.length, new Date());
     _prepareRecords(content.records).then(data => {
       if (data.error) error = true;
       checked = data.data;
