@@ -5,7 +5,7 @@ var db = require('../models/index'),
 module.exports = (content) => {
   return new Promise((resolve, reject) => {
     let error = false, checked = null;
-    console.log("\x1b[36mreceived\x1b[0m: ", content.records.length, new Date());
+    console.log("\x1b[36mreceived\x1b[0m: " + content.records.length + " records", new Date());
     _prepareRecords(content.records).then(data => {
       if (data.error) error = true;
       checked = data.data;
@@ -17,8 +17,14 @@ module.exports = (content) => {
       if (has_error) error = true;
       return _validateRecords(checked);
     }).then(warnings => {
-      if (error) resolve({ forward: [{ room: "admin", key: "error" }].concat(warnings.map(w => { return { room: w.vitabox, key: "warning_" + w.type } })) });
-      else resolve({ forward: warnings.map(w => { return { room: w.vitabox, key: "warning_" + w.type } }) });
+      let warnings_to_send = [];
+      warnings.forEach(w => {
+        warnings_to_send.push({ room: w.vitabox, key: "warning_" + w.type });
+        if (w.patient !== null) warnings_to_send.push({ room: w.patient, key: "warning_" + w.type });
+      });
+
+      if (error) resolve({ forward: [{ room: "admin", key: "error" }].concat(warnings_to_send) });
+      else resolve({ forward: warnings_to_send });
     }).catch(err => reject(err.message));
   });
 }
@@ -135,7 +141,7 @@ _verifyThresholdsFromPatient = (data) => {
     let std2 = (Math.sqrt(data.sensor.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.sensor.last_values.length)) * 2;
     // verify any warning
     if (data.record.value > profile.max || data.record.value > (avg + std2) || data.record.value < profile.min || data.record.value > (avg + std2)) {
-      res = { vitabox: data.sensor.Board.Vitabox.id, type: "bio" };
+      res = { vitabox: data.sensor.Board.Vitabox.id, type: "bio", patient: data.patient.id };
       // update last warning
       promises.push(data.sensor.update({ last_warning: new Date() }));
       promises.push(warning.countDoctor(data.patient.id));
@@ -170,7 +176,7 @@ _verifyThresholdsFromSensor = (data) => {
     let std2 = (Math.sqrt(data.sensor.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.sensor.last_values.length)) * 2;
     // verify any warning
     if (data.record.value > data.sensor.Sensormodel.max_acceptable || data.record.value > (avg + std2) || data.record.value < data.sensor.Sensormodel.min_acceptable || data.record.value > (avg + std2)) {
-      res = { vitabox: data.sensor.Board.Vitabox.id, type: "env" };
+      res = { vitabox: data.sensor.Board.Vitabox.id, type: "env", patient: null };
       // update last warning
       promises.push(data.sensor.update({ last_warning: new Date() }));
       promises.push(warning.countVitabox(data.sensor.Board.Vitabox.id));

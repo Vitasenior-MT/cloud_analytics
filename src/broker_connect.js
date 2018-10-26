@@ -1,34 +1,9 @@
 var amqp = require('amqplib/callback_api'),
   url = require('url');
 
-var workers = [
-  { queue: "insert_record", execute: require("./business/insert_record") },
-  { queue: "remove_record_by_board", execute: require("./business/remove_record").byBoard },
-  { queue: "remove_record_by_sensors", execute: require("./business/remove_record").bySensors },
-  { queue: "remove_record_by_board_patient", execute: require("./business/remove_record").byBoardPatient },
-  { queue: "remove_record_by_patient", execute: require("./business/remove_record").byPatient },
-  { queue: "log", execute: require("./business/log") }
-];
+var channel;
 
-exports.connect = () => {
-  return new Promise((resolve, reject) => {
-    amqp.connect(process.env.AMQP, { servername: url.parse(process.env.AMQP).hostname }, (err, conn) => {
-      if (err) reject(err);
-      else conn.createChannel((err, channel) => {
-        if (err) { conn.close(); reject(err); }
-
-        Promise.all([
-          _connectToWorkers(channel),
-          _connectToExchanges(channel)
-        ]).then(
-          () => resolve(),
-          error => { console.log(error); reject() });
-      });
-    });
-  });
-}
-
-_connectToWorkers = (channel) => {
+_connectToWorkers = () => {
   return new Promise((resolve, reject) => {
     let promises = workers.map(worker => {
       return new Promise((resolve, reject) => {
@@ -41,7 +16,10 @@ _connectToWorkers = (channel) => {
             response => {
               channel.ack(msg);
               response.forward.forEach(x => {
-                channel.publish(x.room, '', new Buffer(JSON.stringify({ content: x.key, msg: "" })));
+
+                _subscribeToEntity(x.room).then(
+                  () => channel.publish(x.room, 'broadcast', new Buffer(JSON.stringify({ content: x.key, msg: "" }))),
+                  error => console.log("broker error: ", error));
               });
             }, error => {
               channel.ack(msg);
@@ -59,25 +37,37 @@ _connectToWorkers = (channel) => {
   });
 }
 
-_connectToExchanges = (channel) => {
+_subscribeToEntity = (entity_id) => {
   return new Promise((resolve, reject) => {
-    require("./business/get_vitaboxes").list().then(
-      vitaboxes => {
-        vitaboxes.push("admin");
+    channel.assertExchange(entity_id, 'direct', { autoDelete: true, durable: false }, function (err, ok) {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
 
-        Promise.all(vitaboxes.map(vitabox => {
-          return new Promise((resolve, reject) => {
-            channel.assertExchange(vitabox, 'fanout', { durable: true });
-            
-            channel.assertQueue('', { exclusive: true }, function (err, q) {
-              if (err) reject(err);
-              channel.bindQueue(q.queue, vitabox, '');
-              resolve();
-            });
-          });
-        })).then(
-          () => resolve(channel),
-          error => reject(error));
-      }, error => reject(error));
+var workers = [
+  { queue: "insert_record", execute: require("./business/insert_record") },
+  { queue: "remove_record_by_board", execute: require("./business/remove_record").byBoard },
+  { queue: "remove_record_by_sensors", execute: require("./business/remove_record").bySensors },
+  { queue: "remove_record_by_board_patient", execute: require("./business/remove_record").byBoardPatient },
+  { queue: "remove_record_by_patient", execute: require("./business/remove_record").byPatient },
+  { queue: "log", execute: require("./business/log") }
+];
+
+exports.connect = () => {
+  return new Promise((resolve, reject) => {
+    amqp.connect(process.env.AMQP, { servername: url.parse(process.env.AMQP).hostname }, (err, conn) => {
+      if (err) reject(err);
+      else conn.createChannel((err, ch) => {
+        if (err) { conn.close(); reject(err); }
+
+        channel = ch;
+
+        _connectToWorkers().then(
+          () => resolve(),
+          error => { console.log(error); reject() });
+      });
+    });
   });
 }
