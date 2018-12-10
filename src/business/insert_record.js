@@ -7,16 +7,20 @@ module.exports = (content) => {
     let error = false, checked = null;
     console.log("\x1b[36mreceived\x1b[0m: " + content.records.length + " records", new Date());
     _prepareRecords(content.records).then(data => {
+      if (process.env.NODE_ENV === "development") console.log("prepared");
       if (data.error) error = true;
       checked = data.data;
       return _insertAllRecords(checked);
     }).then(has_error => {
+      if (process.env.NODE_ENV === "development") console.log("inserted");
       if (has_error) error = true;
       return _updateLastCommits(checked);
     }).then(has_error => {
+      if (process.env.NODE_ENV === "development") console.log("updated");
       if (has_error) error = true;
       return _validateRecords(checked);
     }).then(warnings => {
+      if (process.env.NODE_ENV === "development") console.log("validated");
       let warnings_to_send = [];
       warnings.forEach(w => {
         warnings_to_send.push({ room: w.vitabox, key: "warning_" + w.type });
@@ -40,6 +44,7 @@ _prepareRecords = (records) => {
           if (record.patient_id) promises_1.push(db.Patient.findById(record.patient_id, { include: [{ model: db.Profile }] }));
           Promise.all(promises_1).then(
             res => {
+              console.log("data: " + record.sensor_id);
               if (res[0]) resolve({
                 record: record,
                 sensor: res[0],

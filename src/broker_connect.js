@@ -19,11 +19,11 @@ _connectToWorkers = () => {
 
                 _subscribeToEntity(x.room).then(
                   () => channel.publish(x.room, 'broadcast', new Buffer(JSON.stringify({ content: x.key, msg: "" }))),
-                  error => console.log("broker error: ", error));
+                  error => console.log("broker exchange error: ", error.message));
               });
             }, error => {
               channel.ack(msg);
-              console.log("broker error: ", error);
+              console.log("broker execution error: ", error.message);
             });
         }, { noAck: false });
 
