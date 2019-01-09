@@ -64,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         profile: {
             type: DataTypes.STRING,
-            defaultValue: 'default'
+            defaultValue: 'Default'
         },
         nif: {
             type: DataTypes.STRING

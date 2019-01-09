@@ -5,7 +5,7 @@ var db = require('../models/index'),
 module.exports = (content) => {
   return new Promise((resolve, reject) => {
     let error = false, checked = null;
-    console.log("\x1b[36mreceived\x1b[0m: " + content.records.length + " records", new Date());
+    console.log("\x1b[36mreceived: %s records\x1b[0m", content.records.length);
     _prepareRecords(content.records).then(data => {
       if (process.env.NODE_ENV === "development") console.log("prepared");
       if (data.error) error = true;
@@ -44,7 +44,6 @@ _prepareRecords = (records) => {
           if (record.patient_id) promises_1.push(db.Patient.findById(record.patient_id, { include: [{ model: db.Profile }] }));
           Promise.all(promises_1).then(
             res => {
-              console.log("data: " + record.sensor_id);
               if (res[0]) resolve({
                 record: record,
                 sensor: res[0],
