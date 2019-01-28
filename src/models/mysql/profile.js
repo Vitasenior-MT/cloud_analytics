@@ -46,6 +46,7 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
+    last_values: { type: DataTypes.JSON },
   }, { underscored: true });
 
   Profile.associate = function (models) {

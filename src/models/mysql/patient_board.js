@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: null
+    },
+    last_schedule: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }, { underscored: true });
 

@@ -66,6 +66,9 @@ module.exports = (sequelize, DataTypes) => {
           msg: "locality must be defined"
         }
       }
+    },
+    name: {
+      type: DataTypes.STRING
     }
   }, { underscored: true });
 

@@ -89,27 +89,48 @@ _insertAllRecords = (data) => {
 _updateLastCommits = (data) => {
   return new Promise((resolve, reject) => {
     let promises_all = data.map(d => {
-      let values = d.sensor.last_values ? d.sensor.last_values : [];
-      values.unshift(d.record.value);
-      if (values.length > 5) values.pop();
+      let promises = [];
+      if (d.patient) {
+        let values = d.patient.Profile.last_values ? d.patient.Profile.last_values : [];
+        values.unshift(d.record.value);
+        if (values.length > 5) values.pop();
 
-      let promises = [
-        new Promise((resolve, reject) =>
-          d.sensor.update({ last_commit: new Date(), last_values: values }).then(
-            () => resolve(false),
-            err => error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_update_sensor", err.message).then(
-              () => resolve(true),
-              err => reject(err))))
-      ];
-      if (d.patient) promises.push(
-        new Promise((resolve, reject) =>
-          db.PatientBoard.update({ last_commit: new Date() }, { where: { patient_id: d.patient.id, board_id: d.sensor.Board.id } }).then(
-            () => resolve(false),
-            err => error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_update_board", err.message).then(
-              () => resolve(true),
-              err => reject(err)))
-        ));
+        promises.push(
+          new Promise((resolve, reject) =>
+            db.Profile.update({ last_values: values }, { where: { patient_id: d.patient.id, tag: d.sensor.Sensormodel.tag } }).then(
+              () => resolve(false),
+              err => error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_update_board", err.message).then(
+                () => resolve(true),
+                err => reject(err)))
+          ));
+        promises.push(
+          new Promise((resolve, reject) =>
+            db.PatientBoard.update({ last_commit: new Date() }, { where: { patient_id: d.patient.id, board_id: d.sensor.Board.id } }).then(
+              () => resolve(false),
+              err => error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_update_board", err.message).then(
+                () => resolve(true),
+                err => reject(err)))
+          ));
+        promises.push(
+          new Promise((resolve, reject) =>
+            d.sensor.update({ last_commit: new Date() }).then(
+              () => resolve(false),
+              err => error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_update_sensor", err.message).then(
+                () => resolve(true),
+                err => reject(err)))));
+      } else {
+        let values = d.sensor.last_values ? d.sensor.last_values : [];
+        values.unshift(d.record.value);
+        if (values.length > 5) values.pop();
 
+        promises.push(
+          new Promise((resolve, reject) =>
+            d.sensor.update({ last_commit: new Date(), last_values: values }).then(
+              () => resolve(false),
+              err => error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_update_sensor", err.message).then(
+                () => resolve(true),
+                err => reject(err)))));
+      }
       return promises;
     });
 
@@ -141,8 +162,8 @@ _verifyThresholdsFromPatient = (data) => {
     let promises = [], res = null;
     let profile = data.patient.Profiles.filter(x => x.tag === data.sensor.Sensormodel.tag)[0];
     // calculates average and standard deviation
-    let avg = data.sensor.last_values.reduce((total, x) => total + x) / data.sensor.last_values.length;
-    let std2 = (Math.sqrt(data.sensor.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.sensor.last_values.length)) * 2;
+    let avg = data.patient.Profile.last_values.reduce((total, x) => total + x) / data.patient.Profile.last_values.length;
+    let std2 = (Math.sqrt(data.patient.Profile.last_values.map(x => Math.pow((x - avg), 2)).reduce((total, x) => total + x) / data.patient.Profile.last_values.length)) * 2;
     // verify any warning
     if (data.record.value > profile.max || data.record.value > (avg + std2) || data.record.value < profile.min || data.record.value > (avg + std2)) {
       res = { vitabox: data.sensor.Board.Vitabox.id, type: "bio", patient: data.patient.id };

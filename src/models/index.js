@@ -39,7 +39,7 @@ const operatorsAliases = {
 };
 
 // Create a new conntection to MongoDB server
-mongoose.connect(process.env.MONGODB);
+mongoose.connect(process.env.MONGODB, { useNewUrlParser: true });
 // Create a new connection to MySQL server
 var sequelize = new Sequelize(process.env.MYSQL, { operatorsAliases: operatorsAliases, logging: false });
 
@@ -61,6 +61,7 @@ const db = {
     'Profilemeasure': require('./mongodb/profile_measure'),
     'Profilemodel': require('./mongodb/profile_model'),
     'Record': require('./mongodb/record'),
+    'TempUser': require('./mongodb/temp_user'),
     'Warning': require('./mongodb/warning'),
     'WarningUser': require('./mongodb/warning_user'),
     'WarningDoctor': require('./mongodb/warning_doctor')
