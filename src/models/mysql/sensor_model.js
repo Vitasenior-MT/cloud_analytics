@@ -71,6 +71,25 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
+    min_graph: {
+      type: DataTypes.DECIMAL(10, 5),
+      allowNull: false,
+      validate: {
+        isDecimal: {
+          args: true,
+          msg: "minimum  value to graphs must be defined"
+        }
+      }
+    },
+    max_graph: {
+      type: DataTypes.DECIMAL(10, 5),
+      validate: {
+        isDecimal: {
+          args: true,
+          msg: "maximum value to graphs must be defined"
+        }
+      }
+    },
     to_read: {
       type: DataTypes.STRING,
       allowNull: false,
