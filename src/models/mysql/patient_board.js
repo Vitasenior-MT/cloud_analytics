@@ -3,6 +3,11 @@ module.exports = (sequelize, DataTypes) => {
     schedules: {
       type: DataTypes.JSON
     },
+    frequency: {
+      type: DataTypes.TINYINT(2).UNSIGNED,
+      allowNull: true,
+      defaultValue: null
+    },
     last_commit: {
       type: DataTypes.DATE,
       allowNull: true,
