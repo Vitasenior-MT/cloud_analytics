@@ -168,7 +168,7 @@ _verifyThresholdsFromPatient = (data) => {
     }
     // get profile to respective hour
     let datetime = new Date(data.record.datetime).getHours();
-    if (datetime > 9 && datetime < 18) {
+    if (datetime >= 9 && datetime < 18) {
       max_acceptable = profile.max_diurnal;
       min_acceptable = profile.min_diurnal;
     } else {
