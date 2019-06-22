@@ -72,7 +72,15 @@ module.exports = (sequelize, DataTypes) => {
         cc: {
             type: DataTypes.STRING
         },
-        photo: { type: DataTypes.STRING }
+        photo: {
+            type: DataTypes.STRING
+        },
+        medication: {
+            type: DataTypes.JSON
+        },
+        info: {
+            type: DataTypes.STRING
+        }
     }, { underscored: true });
 
     Patient.associate = function (models) {

@@ -63,3 +63,4 @@ typings/
 .vagrant/
 build/
 package-lock.json
+.vs/

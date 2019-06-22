@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    min: {
+    min_nightly: {
       type: DataTypes.DECIMAL(10, 5),
       allowNull: false,
       validate: {
@@ -36,7 +36,27 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    max: {
+    max_nightly: {
+      type: DataTypes.DECIMAL(10, 5),
+      allowNull: false,
+      validate: {
+        isDecimal: {
+          args: true,
+          msg: "maximum acceptable value must be defined"
+        }
+      }
+    },
+    min_diurnal: {
+      type: DataTypes.DECIMAL(10, 5),
+      allowNull: false,
+      validate: {
+        isDecimal: {
+          args: true,
+          msg: "minimum acceptable value must be defined"
+        }
+      }
+    },
+    max_diurnal: {
       type: DataTypes.DECIMAL(10, 5),
       allowNull: false,
       validate: {

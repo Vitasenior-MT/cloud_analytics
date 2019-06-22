@@ -42,6 +42,10 @@ module.exports = (sequelize, DataTypes) => {
     active: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+    get_warnings: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   }, { underscored: true });
 
