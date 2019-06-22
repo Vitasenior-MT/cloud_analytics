@@ -2,24 +2,26 @@
   "name": "vitasenior_dm",
   "version": "1.0.0",
   "description": "",
-  "engines": {
-    "node": "6.16.0"
-  },
-  "main": "main.js",
+  "main": "server.js",
   "scripts": {
-    "start": "NODE_ENV=production node main.js",
-    "dev": "NODE_ENV=development node main.js"
+    "start": "NODE_ENV=production node server.js",
+    "dev": "NODE_ENV=development node server.js",
+    "build": "webpack -p --progress --optimize-minimize",
+    "prod":"NODE_ENV=production node ./build/bundle.js"
   },
   "author": "Diogo Mendes",
   "license": "ISC",
   "dependencies": {
     "amqplib": "^0.5.2",
-    "cluster": "^0.7.7",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.1.4",
     "mysql2": "^1.5.3",
     "sequelize": "^4.37.10"
+  },
+  "devDependencies": {
+    "webpack": "^4.35.0",
+    "webpack-cli": "^3.3.4"
   }
 }

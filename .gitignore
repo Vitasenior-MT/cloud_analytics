@@ -61,4 +61,5 @@ typings/
 .next
 
 .vagrant/
+build/
 package-lock.json
