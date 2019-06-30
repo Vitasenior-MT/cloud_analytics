@@ -7,7 +7,7 @@
     "start": "NODE_ENV=production node server.js",
     "dev": "NODE_ENV=development node server.js",
     "build": "webpack -p --progress --optimize-minimize",
-    "prod":"NODE_ENV=docker node ./build/bundle.js"
+    "prod":"NODE_ENV=docker node server.js"
   },
   "author": "Diogo Mendes",
   "license": "ISC",
