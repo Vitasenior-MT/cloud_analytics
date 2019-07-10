@@ -23,7 +23,7 @@ _connectToWorkers = () => {
                             });
                         }, error => {
                             channel.ack(msg);
-                            console.log("broker execution error: ", error.message);
+                            console.log("workers execution error: ", error.message);
                         });
                 }, { noAck: false });
 

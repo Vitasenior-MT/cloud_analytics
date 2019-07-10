@@ -7,20 +7,20 @@ module.exports = (content) => {
     let error = false, checked = null;
     console.log("\x1b[36mreceived: %s records\x1b[0m", content.records.length);
     _prepareRecords(content.records).then(data => {
-      if (process.env.NODE_ENV === "development") console.log("prepared");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("prepared");
       if (data.error) error = true;
       checked = data.data;
       return _insertAllRecords(checked);
     }).then(has_error => {
-      if (process.env.NODE_ENV === "development") console.log("inserted");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("inserted");
       if (has_error) error = true;
       return _updateLastCommits(checked);
     }).then(has_error => {
-      if (process.env.NODE_ENV === "development") console.log("updated");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("updated");
       if (has_error) error = true;
       return _validateRecords(checked);
     }).then(warnings => {
-      if (process.env.NODE_ENV === "development") console.log("validated");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("validated");
       let warnings_to_send = [];
       warnings.forEach(w => {
         warnings_to_send.push({ room: w.vitabox, key: "warning_" + w.type });
