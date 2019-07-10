@@ -7,20 +7,20 @@ module.exports = (content) => {
     let error = false, checked = null;
     console.log("\x1b[36mreceived: %s records\x1b[0m", content.records.length);
     _prepareRecords(content.records).then(data => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("prepared");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("prepared, count: ", data.data.length);
       if (data.error) error = true;
       checked = data.data;
       return _insertAllRecords(checked);
     }).then(has_error => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("inserted");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("inserted, error: ", has_error);
       if (has_error) error = true;
       return _updateLastCommits(checked);
     }).then(has_error => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("updated");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("updated, error: ", has_error);
       if (has_error) error = true;
       return _validateRecords(checked);
     }).then(warnings => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("validated");
+      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("validated, warnings: ", warnings.length);
       let warnings_to_send = [];
       warnings.forEach(w => {
         warnings_to_send.push({ room: w.vitabox, key: "warning_" + w.type });
@@ -73,7 +73,10 @@ _insertAllRecords = (data) => {
         patient_id: d.patient ? d.patient.id : null
       }, (err, doc) => {
         if (err) error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_insert_record", err.message).then(
-          () => resolve(true),
+          () =>{ 
+            console.log("ERROR: cannot insert value and error message");
+            resolve(true);
+          },
           err => reject(err));
         else resolve(false);
       });
