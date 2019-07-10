@@ -38,18 +38,21 @@ _prepareRecords = (records) => {
   return new Promise((resolve, reject) => {
     records = records.filter(record => record.value !== undefined && record.value !== null && record.datetime && record.sensor_id && (!record.patient_id || record.patient_id !== ""));
     if (records.length > 0) {
+      console.log("filtered: ", records.length);
       let promises_all = records.map(record => {
         return new Promise((resolve, reject) => {
           let promises_1 = [db.Sensor.findOne({ where: { id: record.sensor_id }, include: [{ model: db.Sensormodel }, { model: db.Board, include: [{ model: db.Vitabox }] }] })];
           if (record.patient_id) promises_1.push(db.Patient.findOne({ where: { id: record.patient_id }, include: [{ model: db.Profile }] }));
           Promise.all(promises_1).then(
             res => {
-              if (res[0]) if (res[0].Board.get_warnings) resolve({
+              console.log("found sensor: ",res[0]?true:false);
+              console.log("found patient: ", record.patient_id ? res[1]?true:false : true);
+
+              if (res[0]) resolve({
                 record: record,
                 sensor: res[0],
                 patient: record.patient_id ? res[1] : null
               });
-              else resolve(null);
               else error.insert(null, null, record.sensor_id, "cannot_update_sensor", "sensor not found").then(
                 () => resolve(null),
                 err => reject(err));
@@ -73,10 +76,7 @@ _insertAllRecords = (data) => {
         patient_id: d.patient ? d.patient.id : null
       }, (err, doc) => {
         if (err) error.insert(d.sensor.Board.Vitabox.id, d.sensor.Board.id, d.sensor.id, "cannot_insert_record", err.message).then(
-          () =>{ 
-            console.log("ERROR: cannot insert value and error message");
-            resolve(true);
-          },
+          () =>resolve(true),
           err => reject(err));
         else resolve(false);
       });
@@ -148,7 +148,8 @@ _updateLastCommits = (data) => {
 
 _validateRecords = (data) => {
   return new Promise((resolve, reject) => {
-    let promises = data.map(d => {
+    let filtered = data.filter(x=>x.sensor.Board.get_warnings);
+    let promises = filtered.map(d => {
       if (d.patient) return _verifyThresholdsFromPatient(d);
       else return _verifyThresholdsFromSensor(d);
     });
