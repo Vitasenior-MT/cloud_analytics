@@ -7,20 +7,20 @@ module.exports = (content) => {
     let error = false, checked = null;
     console.log("\x1b[36mreceived: %s records\x1b[0m", content.records.length);
     _prepareRecords(content.records).then(data => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("prepared, count: ", data.data.length);
+      if (process.env.NODE_ENV === "development") console.log("prepared, count: ", data.data.length);
       if (data.error) error = true;
       checked = data.data;
       return _insertAllRecords(checked);
     }).then(has_error => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("inserted, error: ", has_error);
+      if (process.env.NODE_ENV === "development") console.log("inserted, error: ", has_error);
       if (has_error) error = true;
       return _updateLastCommits(checked);
     }).then(has_error => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("updated, error: ", has_error);
+      if (process.env.NODE_ENV === "development") console.log("updated, error: ", has_error);
       if (has_error) error = true;
       return _validateRecords(checked);
     }).then(warnings => {
-      if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker") console.log("validated, warnings: ", warnings.length);
+      if (process.env.NODE_ENV === "development") console.log("validated, warnings: ", warnings.length);
       let warnings_to_send = [];
       warnings.forEach(w => {
         warnings_to_send.push({ room: w.vitabox, key: "warning_" + w.type });
@@ -38,16 +38,12 @@ _prepareRecords = (records) => {
   return new Promise((resolve, reject) => {
     records = records.filter(record => record.value !== undefined && record.value !== null && record.datetime && record.sensor_id && (!record.patient_id || record.patient_id !== ""));
     if (records.length > 0) {
-      console.log("filtered: ", records.length);
       let promises_all = records.map(record => {
         return new Promise((resolve, reject) => {
           let promises_1 = [db.Sensor.findOne({ where: { id: record.sensor_id }, include: [{ model: db.Sensormodel }, { model: db.Board, include: [{ model: db.Vitabox }] }] })];
           if (record.patient_id) promises_1.push(db.Patient.findOne({ where: { id: record.patient_id }, include: [{ model: db.Profile }] }));
           Promise.all(promises_1).then(
             res => {
-              console.log("found sensor: ",res[0]?true:false);
-              console.log("found patient: ", record.patient_id ? res[1]?true:false : true);
-
               if (res[0]) resolve({
                 record: record,
                 sensor: res[0],
